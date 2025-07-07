@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using SurveyBasket.Api.Services;
+﻿using MapsterMapper;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace SurveyBasket.Api.Controllers;
 
@@ -12,29 +12,43 @@ public class PollsController(IPollService pollService) : ControllerBase
     [HttpGet("")]
     public IActionResult GetAll()
     {
-        return Ok(_pollService.GetAll());
+        var polls = _pollService.GetAll();
+        var response = polls.Adapt<IEnumerable<Poll>>();
+        return Ok(response);
     }
 
     [HttpGet("{id}")]
     public IActionResult Get([FromRoute] int id)
     {
         var poll = _pollService.Get(id);
+        if (poll is null)
+            return NotFound();
+        var response = poll.Adapt<PollResponse>();
+        return Ok(response);
 
-        return poll is null ? NotFound() : Ok(poll);
     }
 
     [HttpPost("")]
-    public IActionResult Add([FromBody] Poll poll)
+    public IActionResult Add([FromBody] CreatePollRequest request,
+        [FromServices] IValidator<CreatePollRequest> validator)
     {
-       var newPoll = _pollService.Add(poll);
+        var validationResult = validator.Validate(request);
+
+        if (!validationResult.IsValid)
+        {
+            var modelStateDictionary = new ModelStateDictionary();
+            validationResult.Errors.ForEach(error => modelStateDictionary.AddModelError(error.PropertyName, error.ErrorMessage));
+            return ValidationProblem(modelStateDictionary);
+        }
+        var newPoll = _pollService.Add(request.Adapt<Poll>());
         return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
     }
     [HttpPut("{id}")]
-    public IActionResult Update([FromRoute]int id,[FromBody]Poll poll)
+    public IActionResult Update([FromRoute] int id, [FromBody] CreatePollRequest request)
     {
-        var isUpdated =  _pollService.Update(id, poll);
-        if (!isUpdated) 
-           return NotFound();
+        var isUpdated = _pollService.Update(id, request.Adapt<Poll>());
+        if (!isUpdated)
+            return NotFound();
 
         return NoContent();
     }
