@@ -1,7 +1,4 @@
-﻿using MapsterMapper;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-
-namespace SurveyBasket.Api.Controllers;
+﻿namespace SurveyBasket.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -10,17 +7,18 @@ public class PollsController(IPollService pollService) : ControllerBase
     private readonly IPollService _pollService = pollService;
 
     [HttpGet("")]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        var polls = _pollService.GetAll();
+
+        var polls =await _pollService.GetAllAsync();
         var response = polls.Adapt<IEnumerable<Poll>>();
         return Ok(response);
     }
 
     [HttpGet("{id}")]
-    public IActionResult Get([FromRoute] int id)
+    public async Task<IActionResult> Get([FromRoute] int id)
     {
-        var poll = _pollService.Get(id);
+        var poll =await _pollService.GetAsync(id);
         if (poll is null)
             return NotFound();
         var response = poll.Adapt<PollResponse>();
@@ -29,37 +27,28 @@ public class PollsController(IPollService pollService) : ControllerBase
     }
 
     [HttpPost("")]
-    public IActionResult Add([FromBody] CreatePollRequest request,
-        [FromServices] IValidator<CreatePollRequest> validator)
+    public async Task<IActionResult> Add([FromBody] CreatePollRequest request)
     {
-        var validationResult = validator.Validate(request);
-
-        if (!validationResult.IsValid)
-        {
-            var modelStateDictionary = new ModelStateDictionary();
-            validationResult.Errors.ForEach(error => modelStateDictionary.AddModelError(error.PropertyName, error.ErrorMessage));
-            return ValidationProblem(modelStateDictionary);
-        }
-        var newPoll = _pollService.Add(request.Adapt<Poll>());
+        var newPoll =await _pollService.AddAsync(request.Adapt<Poll>());
         return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
     }
-    [HttpPut("{id}")]
-    public IActionResult Update([FromRoute] int id, [FromBody] CreatePollRequest request)
-    {
-        var isUpdated = _pollService.Update(id, request.Adapt<Poll>());
-        if (!isUpdated)
-            return NotFound();
+    //[HttpPut("{id}")]
+    //public IActionResult Update([FromRoute] int id, [FromBody] CreatePollRequest request)
+    //{
+    //    var isUpdated = _pollService.Update(id, request.Adapt<Poll>());
+    //    if (!isUpdated)
+    //        return NotFound();
 
-        return NoContent();
-    }
+    //    return NoContent();
+    //}
 
-    [HttpDelete("{id}")]
-    public IActionResult Delete([FromRoute] int id)
-    {
-        var isDeleted = _pollService.Delete(id);
-        if (!isDeleted)
-            return NotFound();
-        return NoContent();
-    }
+    //[HttpDelete("{id}")]
+    //public IActionResult Delete([FromRoute] int id)
+    //{
+    //    var isDeleted = _pollService.Delete(id);
+    //    if (!isDeleted)
+    //        return NotFound();
+    //    return NoContent();
+    //}
 
 }

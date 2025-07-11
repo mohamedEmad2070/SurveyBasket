@@ -1,46 +1,41 @@
-﻿
-using SurveyBasket.Api.Models;
+﻿namespace SurveyBasket.Api.Services;
 
-namespace SurveyBasket.Api.Services;
-
-public class PollService : IPollService
+public class PollService(ApplicationDbContext context) : IPollService
 {
-    private static readonly List<Poll> _polls = [
-       new Poll { Id = 1,
-            Title = "Favorite Programming Language",
-            Description = "Vote for your favorite programming language." },
-         new Poll { Id = 2,Title = "Best Development Framework",
-            Description = "Which development framework do you prefer?" },
-        ];
-    public IEnumerable<Poll> GetAll() => _polls;   
-    public Poll? Get(int id) => _polls.FirstOrDefault(p => p.Id == id);
+    private readonly ApplicationDbContext _context = context;
 
-    public Poll Add(Poll poll)
-    {
-        poll.Id = _polls.Count + 1; // Simple ID generation logic
-        _polls.Add(poll);
+    public async Task<IEnumerable<Poll>> GetAllAsync() =>
+        await _context.Polls.AsNoTracking().ToListAsync();
+
+    public async Task<Poll?> GetAsync(int id) =>
+        await _context.Polls.FindAsync(id);
+
+    public async Task<Poll> AddAsync(Poll poll)
+    { 
+        await _context.Polls.AddAsync(poll);
+        await _context.SaveChangesAsync();
         return poll;
 
     }
 
-    public bool Update(int id, Poll poll)
-    {
-        var currPoll = Get(id);
-        if (currPoll is null) 
-            return false;
-        
-        currPoll.Title = poll.Title;
-        currPoll.Description = poll.Description;
-        return true;
+    //public bool Update(int id, Poll poll)
+    //{
+    //    var currPoll = Get(id);
+    //    if (currPoll is null) 
+    //        return false;
 
-    }
+    //    currPoll.Title = poll.Title;
+    //    currPoll.Summary = poll.Summary;
+    //    return true;
 
-    public bool Delete(int id)
-    {
-        var currPoll = Get(id);
-        if (currPoll is null)
-            return false;
-        _polls.Remove(currPoll);
-        return true;
-    }
+    //}
+
+    //public bool Delete(int id)
+    //{
+    //    var currPoll = Get(id);
+    //    if (currPoll is null)
+    //        return false;
+    //    _polls.Remove(currPoll);
+    //    return true;
+    //}
 }
