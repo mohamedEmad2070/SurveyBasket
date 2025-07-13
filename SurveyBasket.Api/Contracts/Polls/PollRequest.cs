@@ -1,7 +1,6 @@
-﻿namespace SurveyBasket.Api.Contracts.Responses;
+﻿namespace SurveyBasket.Api.Contracts.Polls;
 
-public record PollResponse(
-    int Id ,
+public record PollRequest(
      string Title,
      string Summary,
      bool IsPublished,
