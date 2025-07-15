@@ -13,7 +13,7 @@ public static class DependencyInjection
     public static IServiceCollection AddDependecies(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers();
-        services.AddAuthConfig();
+        services.AddAuthConfig(configuration);
 
         var connectionString = configuration.GetConnectionString("DefaultConnection") ??
           throw new InvalidOperationException("Connection string 'DefaultConnection' not Found ");
@@ -54,11 +54,18 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddAuthConfig(this IServiceCollection services)
+    private static IServiceCollection AddAuthConfig(this IServiceCollection services , IConfiguration configuration)
     {
         services.AddSingleton<IJwtProvider, JwtProvider>();
         services.AddIdentity<ApplicationUser, IdentityRole>().
             AddEntityFrameworkStores<ApplicationDbContext>();
+
+        //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
+        services.AddOptions<JwtOptions>().BindConfiguration(JwtOptions.SectionName).
+            ValidateDataAnnotations().ValidateOnStart();
+
+        var JwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
 
         services.AddAuthentication(options =>
         {
@@ -73,9 +80,9 @@ public static class DependencyInjection
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = "SurveyBasket",
-                ValidAudience = "SurveyBasket",
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("zE:gT~+3_BHUy,E"))
+                ValidIssuer = JwtSettings?.Issuer,
+                ValidAudience = JwtSettings?.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSettings?.Key!))
             };
         }
         );
