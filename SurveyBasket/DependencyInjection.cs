@@ -3,6 +3,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using SurveyBasket.Api.Authentication;
 using SurveyBasket.Persistence;
 using System.Reflection;
 using System.Text;
@@ -15,7 +16,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddControllers();
-        services.AddAuthConfig();
+        services.AddAuthConfig(configuration);
 
         var connectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -65,38 +66,38 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddAuthConfig(this IServiceCollection services/*, IConfiguration configuration*/)
+    private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        //services.AddSingleton<IJwtProvider, JwtProvider>();
+        services.AddSingleton<IJwtProvider, JwtProvider>();
         services.AddIdentity<ApplicationUser, IdentityRole>().
             AddEntityFrameworkStores<ApplicationDbContext>();
 
-        //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 
-        //services.AddOptions<JwtOptions>().BindConfiguration(JwtOptions.SectionName).
-            //ValidateDataAnnotations().ValidateOnStart();
+        services.AddOptions<JwtOptions>().BindConfiguration(JwtOptions.SectionName).
+            ValidateDataAnnotations().ValidateOnStart();
 
-        //var JwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+        var JwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
 
-        //services.AddAuthentication(options =>
-        //{
-        //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        //}).AddJwtBearer(o =>
-        //{
-        //    o.SaveToken = true;
-        //    o.TokenValidationParameters = new TokenValidationParameters
-        //    {
-        //        ValidateIssuer = true,
-        //        ValidateAudience = true,
-        //        ValidateLifetime = true,
-        //        ValidateIssuerSigningKey = true,
-        //        ValidIssuer = JwtSettings?.Issuer,
-        //        ValidAudience = JwtSettings?.Audience,
-        //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSettings?.Key!))
-        //    };
-        //}
-        //);
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(o =>
+        {
+            o.SaveToken = true;
+            o.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = JwtSettings?.Issuer,
+                ValidAudience = JwtSettings?.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSettings?.Key!))
+            };
+        }
+        );
 
         return services;
     }

@@ -1,4 +1,5 @@
-﻿using SurveyBasket.Api.Contracts.Authentication;
+﻿using Microsoft.AspNetCore.Authorization;
+using SurveyBasket.Api.Contracts.Authentication;
 
 namespace SurveyBasket.Api.Controllers;
 [Route("[controller]")]
