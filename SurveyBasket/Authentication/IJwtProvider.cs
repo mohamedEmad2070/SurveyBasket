@@ -4,5 +4,5 @@ public interface IJwtProvider
 {
     (string token,int expireseIn)GenerateToken(ApplicationUser user);
 
-    //string? ValidateToken(string token);
+    string? ValidateToken(string token);
 }
