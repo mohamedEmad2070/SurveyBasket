@@ -33,23 +33,15 @@ public class PollsController(IPollService pollService) : ControllerBase
             : Problem(statusCode:StatusCodes.Status404NotFound,title:result.Error.Code,detail:result.Error.Description);
     }
 
-    //[HttpPost("")]
-    //public async Task<IActionResult> Add([FromBody] PollRequest request,
-    //    CancellationToken cancellationToken)
-    //{
-    //    var newPoll = await _pollService.AddAsync(request, cancellationToken);
+    [HttpPost("")]
+    public async Task<IActionResult> Add([FromBody] PollRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _pollService.AddAsync(request, cancellationToken);
 
-    //    //return newPoll.IsSuccess ? 
-    //    //     CreatedAtAction(nameof(Get), new { id = newPoll.Value.Id }, newPoll.Value.Adapt<PollResponse>())
-    //    //    : Problem(statusCode: StatusCodes.Status400BadRequest, title: newPoll.Error.Code, detail: newPoll.Error.Description);
-
-    //    return newPoll.IsSuccess ?
-    //     CreatedAtAction(nameof(Get), new { id = ((dynamic)newPoll.Value).Id }, newPoll.Value.Adapt<PollResponse>())
-    //    : Problem(statusCode: StatusCodes.Status400BadRequest, title: newPoll.Error.Code, detail: newPoll.Error.Description);
-
-
-    //    //return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll.Adapt<PollResponse>());
-    //}
+        return result.IsSuccess
+            ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
+            : Problem(statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code, detail: result.Error.Description);
+    }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] PollRequest request,

@@ -18,13 +18,14 @@ public class PollService(ApplicationDbContext context) : IPollService
             : Result.Failure<PollResponse>(PollErrors.PollNotFound);
     }
 
-    //public async Task<Result<PollRequest>> AddAsync(PollRequest poll, CancellationToken cancellationToken = default)
-    //{
-    //    await _context.AddAsync(poll, cancellationToken);
-    //    await _context.SaveChangesAsync(cancellationToken);
+    public async Task<Result<PollResponse>> AddAsync(PollRequest pollRequest, CancellationToken cancellationToken = default)
+    {
+        var poll = pollRequest.Adapt<Poll>();
+        await _context.Polls.AddAsync(poll, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
-    //    return Result.Success(poll);
-    //}
+        return Result.Success(poll.Adapt<PollResponse>());
+    }
 
     public async Task<Result> UpdateAsync(int id, PollRequest poll, CancellationToken cancellationToken = default)
     {
@@ -59,7 +60,6 @@ public class PollService(ApplicationDbContext context) : IPollService
 
     public async Task<Result> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default)
     {
-        
         var poll = await _context.Polls.FindAsync(id, cancellationToken);
 
         if (poll is null)
