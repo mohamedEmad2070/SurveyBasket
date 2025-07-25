@@ -18,6 +18,15 @@ public static class DependencyInjection
         services.AddControllers();
         services.AddAuthConfig(configuration);
 
+        //add cors with default policy
+        services.AddCors(options => options.AddDefaultPolicy(
+            builder => builder
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+            )
+        );
+
         var connectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
