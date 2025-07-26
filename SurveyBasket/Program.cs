@@ -1,5 +1,4 @@
 using SurveyBasket;
-using SurveyBasket.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,5 +20,7 @@ app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseExceptionHandler();
 
 app.Run();

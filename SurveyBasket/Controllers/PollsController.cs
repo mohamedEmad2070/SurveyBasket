@@ -40,7 +40,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess
             ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
-           : result.ToProblem(StatusCodes.Status400BadRequest);
+           : result.ToProblem(StatusCodes.Status409Conflict);
     }
 
     [HttpPut("{id}")]
@@ -50,8 +50,8 @@ public class PollsController(IPollService pollService) : ControllerBase
         var result = await _pollService.UpdateAsync(id, request, cancellationToken);
 
         return result.IsSuccess ?
-            NoContent()
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+              NoContent()
+            : result.ToProblem(StatusCodes.Status409Conflict);
     }
 
     [HttpDelete("{id}")]

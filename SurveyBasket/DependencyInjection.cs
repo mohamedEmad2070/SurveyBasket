@@ -42,7 +42,11 @@ public static class DependencyInjection
 
         services.AddScoped<IPollService, PollService>();
 
-        
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+
+        services.AddProblemDetails();
+
+
 
         return services;
     }
