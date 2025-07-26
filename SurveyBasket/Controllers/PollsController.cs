@@ -30,7 +30,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess ?
             Ok(result.Value)
-            : Problem(statusCode:StatusCodes.Status404NotFound,title:result.Error.Code,detail:result.Error.Description);
+            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
     }
 
     [HttpPost("")]
@@ -40,7 +40,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess
             ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value)
-            : Problem(statusCode: StatusCodes.Status400BadRequest, title: result.Error.Code, detail: result.Error.Description);
+           : result.ToProblem(StatusCodes.Status400BadRequest);
     }
 
     [HttpPut("{id}")]
@@ -49,8 +49,8 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.UpdateAsync(id, request, cancellationToken);
 
-        return result.IsSuccess ? 
-            NoContent() 
+        return result.IsSuccess ?
+            NoContent()
             : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
     }
 
@@ -61,7 +61,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess ?
               NoContent()
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+            : result.ToProblem(StatusCodes.Status404NotFound);
     }
 
     [HttpPut("{id}/togglePublish")]
@@ -71,6 +71,6 @@ public class PollsController(IPollService pollService) : ControllerBase
 
         return result.IsSuccess ?
             NoContent()
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+            : result.ToProblem(StatusCodes.Status404NotFound);
     }
 }

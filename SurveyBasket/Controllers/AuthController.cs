@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using SurveyBasket.Api.Contracts.Authentication;
+﻿namespace SurveyBasket.Api.Controllers;
 
-namespace SurveyBasket.Api.Controllers;
 [Route("[controller]")]
 [ApiController]
 public class AuthController(IAuthService authService) : ControllerBase
@@ -15,7 +13,7 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return authResult.IsSuccess ?
             Ok(authResult.Value)
-            : Problem(statusCode: StatusCodes.Status400BadRequest, title: authResult.Error.Code, detail: authResult.Error.Description);
+            :authResult.ToProblem(StatusCodes.Status400BadRequest) ;
     }
 
     [HttpPost("refresh")]
@@ -25,17 +23,17 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return authResult.IsSuccess
             ? Ok(authResult.Value)
-            : Problem(statusCode: StatusCodes.Status400BadRequest, title: authResult.Error.Code, detail: authResult.Error.Description);
+             : authResult.ToProblem(StatusCodes.Status400BadRequest);
     }
 
     [HttpPost("revoke-refresh-token")]
     public async Task<IActionResult> RevokeRefreshTokenAsync([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
         var isRevoked = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
-        
+
         return isRevoked.IsSuccess
             ? Ok()
-            : Problem(statusCode: StatusCodes.Status400BadRequest, title: isRevoked.Error.Code, detail: isRevoked.Error.Description);
+            : isRevoked.ToProblem(StatusCodes.Status400BadRequest);
     }
 
 }
