@@ -44,6 +44,8 @@ public static class DependencyInjection
 
         services.AddScoped<IQuestionService, QuestionService>();
 
+        services.AddScoped<IVoteService, VoteService>();
+
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
         services.AddProblemDetails();

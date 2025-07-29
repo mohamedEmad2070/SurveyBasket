@@ -12,6 +12,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Answer> Answers { get; set; }
     public DbSet<Poll> Polls { get; set; }
     public DbSet<Question> Questions { get; set; }
+    public DbSet<Vote> Votes { get; set; }
+    public DbSet<VoteAnswer> VoteAnswers { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,7 +38,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         var entries = ChangeTracker.Entries<AuditableEntity>();
         foreach (var entry in entries)
         {
-            var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = _httpContextAccessor.HttpContext?.User.GetUserId()!;
             if (entry.State == EntityState.Added)
             {
                 entry.Property(x=> x.CreatedById).CurrentValue = userId;

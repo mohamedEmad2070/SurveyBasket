@@ -4,7 +4,7 @@ public static class   PollErrors
 
 {
     public static readonly Error PollNotFound =
-        new Error("Poll.NotFound", "Poll with this id NotFound");
+        new("Poll.NotFound", "Poll with this id NotFound",StatusCodes.Status404NotFound);
     public static readonly Error PollTitleAlreadyExists =
-        new Error("Poll.TitleAlreadyExists", "Poll Title Already Exists");
+        new("Poll.TitleAlreadyExists", "Poll Title Already Exists", StatusCodes.Status409Conflict);
 }

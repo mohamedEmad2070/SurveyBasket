@@ -3,8 +3,8 @@
 public static class UserErrors
 {
     public static readonly Error InvalidCredential = 
-        new Error("User.InvalidCredential", "Invalid Email/Password");
+        new("User.InvalidCredential", "Invalid Email/Password",StatusCodes.Status401Unauthorized);
 
     public static readonly Error InvalidTokensCredential = 
-        new Error("Token.InvalidCredential", "Invalid Token/RefreshToken");
+        new ("Token.InvalidCredential", "Invalid Token/RefreshToken",StatusCodes.Status401Unauthorized);
 }
