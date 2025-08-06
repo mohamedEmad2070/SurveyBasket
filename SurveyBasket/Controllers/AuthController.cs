@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Api.Controllers;
+﻿using SurveyBasket.Contracts.Authentication;
+
+namespace SurveyBasket.Api.Controllers;
 
 [Route("[controller]")]
 [ApiController]
@@ -31,6 +33,27 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return isRevoked.IsSuccess
             ? Ok(): isRevoked.ToProblem();
+    }
+    [HttpPost("register")]
+    public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequest request, CancellationToken cancellationToken)
+    {
+        var registerResult = await _authService.RegisterAsync(request, cancellationToken);
+        return registerResult.IsSuccess
+            ? Ok(): registerResult.ToProblem();
+    }
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmailAsync([FromBody] ConfirmEmailRequest request)
+    {
+        var confirmResult = await _authService.ConfirmEmailAsync(request);
+        return confirmResult.IsSuccess
+            ? Ok() : confirmResult.ToProblem();
+    }
+    [HttpPost("resend-confirmation-email")]
+    public async Task<IActionResult> ResendConfirmationEmailAsync([FromBody] ResendConfirmationEmailRequest request)
+    {
+        var resendResult = await _authService.ResendConfirmationEmailAsync(request);
+        return resendResult.IsSuccess
+            ? Ok() : resendResult.ToProblem();
     }
 
 }

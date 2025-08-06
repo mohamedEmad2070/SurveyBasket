@@ -1,10 +1,9 @@
 ﻿using FluentValidation.AspNetCore;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
-using SurveyBasket.Api.Authentication;
-using SurveyBasket.Persistence;
+using SurveyBasket.Settings;
 using System.Reflection;
 using System.Text;
 
@@ -17,6 +16,8 @@ public static class DependencyInjection
     {
         services.AddControllers();
         services.AddAuthConfig(configuration);
+
+        services.AddHybridCache();
 
         //add cors with default policy
         services.AddCors(options => options.AddDefaultPolicy(
@@ -40,6 +41,8 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthService, AuthService>();
 
+        services.AddScoped<IEmailSender, EmailService>();
+
         services.AddScoped<IPollService, PollService>();
 
         services.AddScoped<IQuestionService, QuestionService>();
@@ -51,6 +54,10 @@ public static class DependencyInjection
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
         services.AddProblemDetails();
+
+        services.AddHttpContextAccessor();
+
+        services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
 
 
 
@@ -66,7 +73,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddMapsterConf(this IServiceCollection services) 
+    private static IServiceCollection AddMapsterConf(this IServiceCollection services)
     {
         var mappingConfig = TypeAdapterConfig.GlobalSettings;
         mappingConfig.Scan(Assembly.GetExecutingAssembly());
@@ -89,7 +96,8 @@ public static class DependencyInjection
     {
         services.AddSingleton<IJwtProvider, JwtProvider>();
         services.AddIdentity<ApplicationUser, IdentityRole>().
-            AddEntityFrameworkStores<ApplicationDbContext>();
+            AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 
@@ -115,6 +123,14 @@ public static class DependencyInjection
                 ValidAudience = JwtSettings?.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSettings?.Key!))
             };
+        }
+
+        );
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Password.RequiredLength = 8;
+            options.SignIn.RequireConfirmedEmail = true;
+            options.User.RequireUniqueEmail = true;
         }
         );
 

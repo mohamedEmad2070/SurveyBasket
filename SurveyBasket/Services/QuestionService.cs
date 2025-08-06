@@ -1,11 +1,13 @@
-﻿using SurveyBasket.Contracts.Answers;
+﻿using Microsoft.Extensions.Caching.Hybrid;
+using SurveyBasket.Contracts.Answers;
 using SurveyBasket.Contracts.Questions;
 
 namespace SurveyBasket.Services;
 
-public class QuestionService(ApplicationDbContext context) : IQuestionService
+public class QuestionService(ApplicationDbContext context, HybridCache hybridCache ) : IQuestionService
 {
     private readonly ApplicationDbContext _context = context;
+    private readonly HybridCache _hybridCache = hybridCache;
 
     public async Task<Result<IEnumerable<QuestionsResponse>>> GetAllAsync(int pollId, CancellationToken cancellationToken = default)
     {
