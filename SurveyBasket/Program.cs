@@ -1,3 +1,5 @@
+using Hangfire;
+using HangfireBasicAuthenticationFilter;
 using Serilog;
 using SurveyBasket;
 
@@ -21,6 +23,26 @@ if (app.Environment.IsDevelopment())
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
+
+app.UseHangfireDashboard("/jobs", new DashboardOptions
+{
+    Authorization =
+    [
+        new HangfireCustomBasicAuthenticationFilter{
+            User = app.Configuration.GetValue<string>("HangfireSettings:username"),
+
+            Pass = app.Configuration.GetValue<string>("HangfireSettings:password")
+        }
+        ],
+     DashboardTitle = "Survey Basket Dashboard",
+    //IsReadOnlyFunc = (DashboardContext conext) => true
+
+});
+var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+using var scope = scopeFactory.CreateScope();
+var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+RecurringJob.AddOrUpdate("SendNewPollsNotification", () => notificationService.SendNewPollsNotification(null), Cron.Daily);
 
 app.UseCors();
 
