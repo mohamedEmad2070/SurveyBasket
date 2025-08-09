@@ -4,7 +4,7 @@ namespace SurveyBasket.Controllers;
 
 [Route("api/polls/{pollId}/vote")]
 [ApiController]
-[Authorize]
+[Authorize(Roles =DefaultRoles.Member)]
 public class VotesController(IQuestionService questionService,IVoteService voteService) : ControllerBase
 {
     private readonly IQuestionService _questionService = questionService;

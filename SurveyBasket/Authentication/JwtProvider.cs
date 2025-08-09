@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 
 namespace SurveyBasket.Api.Authentication;
 
@@ -11,14 +12,16 @@ public class JwtProvider(IOptions<JwtOptions> options) : IJwtProvider
 {
     private readonly JwtOptions _options = options.Value;
 
-    public (string token, int expireseIn) GenerateToken(ApplicationUser user)
+    public (string token, int expireseIn) GenerateToken(ApplicationUser user,IEnumerable<string> roles,IEnumerable<string> permissions)
     {
         Claim[] claims = [
              new Claim(JwtRegisteredClaimNames.Sub , user.Id),
              new Claim(JwtRegisteredClaimNames.Email , user.Email!),
              new Claim(JwtRegisteredClaimNames.GivenName , user.FirstName),
              new Claim(JwtRegisteredClaimNames.FamilyName , user.LastName),
-             new Claim(JwtRegisteredClaimNames.Jti , Guid.NewGuid().ToString())
+             new Claim(JwtRegisteredClaimNames.Jti , Guid.NewGuid().ToString()),
+             new Claim(nameof(roles),JsonSerializer.Serialize(roles),JsonClaimValueTypes.JsonArray),
+             new Claim(nameof(permissions),JsonSerializer.Serialize(permissions),JsonClaimValueTypes.JsonArray)
 
             ];
 

@@ -4,6 +4,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
+using SurveyBasket.Authentication.Filters;
 using SurveyBasket.Settings;
 using System.Reflection;
 using System.Text;
@@ -102,6 +103,10 @@ public static class DependencyInjection
         services.AddIdentity<ApplicationUser, ApplicationRole>().
             AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
+
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 

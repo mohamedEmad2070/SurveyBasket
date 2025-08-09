@@ -18,7 +18,7 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
 
         //Default Data
 
-        var passwordHasher = new PasswordHasher<ApplicationUser>();
+        //var passwordHasher = new PasswordHasher<ApplicationUser>();
 
         builder.HasData(new ApplicationUser
         {
@@ -32,7 +32,7 @@ public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
             SecurityStamp = DefaultUsers.AdminSecurityStamp,
             ConcurrencyStamp = DefaultUsers.AdminConcurrencyStamp,
             EmailConfirmed = true,
-            PasswordHash = passwordHasher.HashPassword(null!, DefaultUsers.AdminPassword)
+            PasswordHash = "AQAAAAIAAYagAAAAEFFMasTpQXQ9cizVpnvgOrkvLmX/W3XcQkhGRtVeLlXsBpwfD6TmQL98Zd2GbgyB1w=="
         });
     }
 }
