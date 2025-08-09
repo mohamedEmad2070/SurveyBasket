@@ -16,4 +16,5 @@ global using SurveyBasket.Errors;
 global using SurveyBasket.Contracts.Results;
 global using SurveyBasket.Api.Entities;
 global using SurveyBasket.Extensions;
+global using SurveyBasket.Abstractions.Consts;
 
