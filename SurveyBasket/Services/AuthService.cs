@@ -32,7 +32,10 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         if (await _userManager.FindByEmailAsync(email) is not { } user)
             return Result.Failure<AuthResponse>(UserErrors.InvalidCredential);
 
-        var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+        if (user.IsDisabled)
+            return Result.Failure<AuthResponse>(UserErrors.DisabledUser);
+
+        var result = await _signInManager.PasswordSignInAsync(user, password, false, true);
         if (result.Succeeded)
         {
             var (userRoles, userPermissions) = await GetUserRolesAndPermissions(user, cancellationToken);
@@ -56,7 +59,13 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             return Result.Success(response);
 
         }
-        return Result.Failure<AuthResponse>(result.IsNotAllowed ? UserErrors.EmailNotConfirmed : UserErrors.InvalidCredential);
+        var error = result.IsNotAllowed ?
+            UserErrors.EmailNotConfirmed 
+            : result.IsLockedOut
+            ? UserErrors.LockedOut 
+            : UserErrors.InvalidCredential;
+
+        return Result.Failure<AuthResponse>(error);
 
 
     }
@@ -69,6 +78,12 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
             return Result.Failure<AuthResponse>(UserErrors.InvalidTokensCredential);
+
+        if (user.IsDisabled)
+            return Result.Failure<AuthResponse>(UserErrors.DisabledUser);
+        if (user.LockoutEnd > DateTime.UtcNow)
+            return Result.Failure<AuthResponse>(UserErrors.LockedOut);
+
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(rt => rt.Token == refreshToken && rt.isActve);
 
         if (userRefreshToken is null)
