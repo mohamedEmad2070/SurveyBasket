@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
 using SurveyBasket.Authentication.Filters;
+using SurveyBasket.Health;
 using SurveyBasket.Settings;
 using System.Reflection;
 using System.Text;
@@ -64,9 +65,10 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
-
-
-
+        services.AddHealthChecks()
+            .AddSqlServer(name:"database",connectionString:configuration.GetConnectionString("DefaultConnection")!)
+            .AddHangfire(options=> { options.MinimumAvailableServers = 1; })
+            .AddCheck<MailProviderHealthCheck>(name: " Mail Provider");
         return services;
     }
 
@@ -147,7 +149,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddBackGroundJobsConfig(this IServiceCollection services,IConfiguration configuration)
+    private static IServiceCollection AddBackGroundJobsConfig(this IServiceCollection services, IConfiguration configuration)
     {
         // Add Hangfire services.
         services.AddHangfire(config => config
