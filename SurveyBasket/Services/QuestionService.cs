@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Hybrid;
 using SurveyBasket.Contracts.Answers;
+using SurveyBasket.Contracts.Common;
 using SurveyBasket.Contracts.Questions;
 
 namespace SurveyBasket.Services;
@@ -9,21 +10,22 @@ public class QuestionService(ApplicationDbContext context, HybridCache hybridCac
     private readonly ApplicationDbContext _context = context;
     private readonly HybridCache _hybridCache = hybridCache;
 
-    public async Task<Result<IEnumerable<QuestionsResponse>>> GetAllAsync(int pollId, CancellationToken cancellationToken = default)
+    public async Task<Result<PaginatedList<QuestionsResponse>>> GetAllAsync(int pollId, RequestFilters filters, CancellationToken cancellationToken = default)
     {
         var pollISExists = await _context.Polls.AnyAsync(x => x.Id == pollId, cancellationToken);
 
         if (!pollISExists)
-            return Result.Failure<IEnumerable<QuestionsResponse>>(PollErrors.PollNotFound);
+            return Result.Failure<PaginatedList<QuestionsResponse>>(PollErrors.PollNotFound);
 
-        var questions = await _context.Questions
-            .Where(x => x.PollId == pollId)
+        var query =  _context.Questions
+            .Where(x => x.PollId == pollId && (string.IsNullOrEmpty(filters.SearchValue)||x.Content.Contains(filters.SearchValue)))
             .Include(x => x.Answers)
             .ProjectToType<QuestionsResponse>()
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+            .AsNoTracking();
 
-        return Result.Success<IEnumerable<QuestionsResponse>>(questions);
+        var question = await PaginatedList<QuestionsResponse>.CreateAsync(query, filters.PageNumber, filters.PageSize, cancellationToken);
+
+        return Result.Success(question);
     }
 
     public async Task<Result<IEnumerable<QuestionsResponse>>> GetAvailableAsync(int pollId, string userId, CancellationToken cancellationToken = default)
