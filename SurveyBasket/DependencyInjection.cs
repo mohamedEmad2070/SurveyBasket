@@ -1,4 +1,5 @@
-﻿using FluentValidation.AspNetCore;
+﻿using Asp.Versioning;
+using FluentValidation.AspNetCore;
 using Hangfire;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -72,6 +73,20 @@ public static class DependencyInjection
             .AddHangfire(options=> { options.MinimumAvailableServers = 1; })
             .AddCheck<MailProviderHealthCheck>(name: " Mail Provider");
         services.AddRateLimitingConfig();
+        services.AddApiVersioning(option =>
+        {
+            option.DefaultApiVersion = new ApiVersion(1);
+            option.AssumeDefaultVersionWhenUnspecified = true;
+            option.ReportApiVersions = true;
+            option.ApiVersionReader = new HeaderApiVersionReader("x-api-version");
+        }).AddApiExplorer(option =>
+        {
+            option.GroupNameFormat = "'v'V";
+            option.SubstituteApiVersionInUrl = true;
+        });
+           
+            
+
         return services;
     }
 

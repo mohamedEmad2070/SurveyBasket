@@ -7,6 +7,7 @@ namespace SurveyBasket.Controllers;
 [ApiController]
 [Authorize(Roles =DefaultRoles.Member)]
 [EnableRateLimiting(RateLimiters.Concurrency)]
+
 public class VotesController(IQuestionService questionService,IVoteService voteService) : ControllerBase
 {
     private readonly IQuestionService _questionService = questionService;
