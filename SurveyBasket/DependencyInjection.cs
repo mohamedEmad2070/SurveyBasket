@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using MapsterMapper;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using SurveyBasket.Authentication.Filters;
 using SurveyBasket.Health;
+using SurveyBasket.OpenApiTransformers;
 using SurveyBasket.Settings;
 using System.Reflection;
 using System.Text;
@@ -42,7 +44,6 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString));
 
         services
-            .AddSwaggerServices()
             .AddMapsterConf()
             .AddFluentValidationConf();
 
@@ -84,17 +85,28 @@ public static class DependencyInjection
             option.GroupNameFormat = "'v'V";
             option.SubstituteApiVersionInUrl = true;
         });
-           
-            
+
+        services
+          .AddEndpointsApiExplorer()
+          .AddOpenApiServices();
 
         return services;
     }
 
-    private static IServiceCollection AddSwaggerServices(this IServiceCollection services)
+    private static IServiceCollection AddOpenApiServices(this IServiceCollection services)
     {
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        var serviceProvider = services.BuildServiceProvider();
+        var apiVersionDescriptionProvider = serviceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+
+        foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+        {
+            services.AddOpenApi(description.GroupName, options =>
+            {
+                
+                options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+                options.AddDocumentTransformer(new ApiVersioningTransformer(description));
+            });
+        }
 
         return services;
     }

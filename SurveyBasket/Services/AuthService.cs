@@ -1,8 +1,7 @@
 ﻿using Hangfire;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
-using SurveyBasket.Contracts.Authentication;
+using SurveyBasket.Api.Entities;
 using SurveyBasket.Helpers;
 using System.Security.Cryptography;
 using System.Text;
